@@ -1,0 +1,13 @@
+@media screen and (max-width: 500px) {
+  .invoice-page-header { display: block !important; margin: 0 auto 30px !important;}
+  .invoice-page-header h1 { font-size: 24px !important; font-family: 'Urbanist'; margin-top: 15px !important; }
+  .invoice-page-wrapper { padding: 40px 15px !important;}
+  .invoice-box {padding: 32px 20px !important;}
+  .invoice-header { align-items: center !important; margin-bottom: 20px !important; }
+  .invoice-title { font-size: 20px !important; margin: 0 !important; }
+  .invoice-bill-to { margin-bottom: 25px !important;}
+  .invoice-payment-info {  margin-top: 30px !important; display: block !important;}
+  .invoice-sign p{text-align: center !important;}
+  .invoice-sign p img{ width: 20% !important;}
+  .payment-box { padding: 32px 20px !important;}
+}
