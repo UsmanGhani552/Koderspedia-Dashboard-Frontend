@@ -11,7 +11,7 @@ import LoadingSpinner from "../common/LoadingSpinner";
 const LoginDataTable = () => {
   const dispatch = useDispatch();
   const [startDate, setStartDate] = useState(new Date("2025-01-01"));
-  const [endDate, setEndDate] = useState(new Date("2025-12-10"));
+  const [endDate, setEndDate] = useState(new Date());
   const [filter] = useState("");
   const { loginActivity, loading, error } = useSelector((state) => state.loginActivity);
 

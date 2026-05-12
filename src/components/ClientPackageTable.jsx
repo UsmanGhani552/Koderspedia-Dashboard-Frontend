@@ -12,7 +12,7 @@ const ClientPackageTable = () => {
     const dispatch = useDispatch();
     const { packages, loading, error } = useSelector((state) => state.packages);
     const [startDate, setStartDate] = useState(new Date('2025-01-01'));
-    const [endDate, setEndDate] = useState(new Date('2025-12-10'));
+    const [endDate, setEndDate] = useState(new Date());
     const [filter] = useState('');
     const [showDrawer, setShowDrawer] = useState(false);
     const [selectedPackage, setSelectedPackage] = useState(null);
