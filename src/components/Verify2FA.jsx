@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import AuthService from '../../services/authService';
-
+import AuthService from '../services/authService';
 
 export const fetchUser = createAsyncThunk(
   'auth/fetchUser',
@@ -30,108 +29,27 @@ export const fetchUser = createAsyncThunk(
   }
 );
 
-// export const loginUser = createAsyncThunk(
-//   'auth/login',
-//   async (credentials, { rejectWithValue }) => {
-//     try {
-//       const response = await AuthService.login(credentials);
-//       console.log("Login response:", response);
-//       // Store tokens directly in localStorage
-//       const { token, user, role } = response.data;
-//       localStorage.setItem('token', token);
-//       localStorage.setItem('user', JSON.stringify(user));
-//       localStorage.setItem('role', role); // Store role for later use
-//       return { token, user}; // ✅ only return required payload
-//     } catch (error) {
-//       const errorMessage = error.response?.data?.message ||
-//         error.response?.data?.data?.error?.[0] ||
-//         error.message;
-//       return rejectWithValue(errorMessage);
-//     }
-//   }
-// );
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      console.log("Login thunk started with:", credentials);
       const response = await AuthService.login(credentials);
-      console.log("AuthService response:", response);
-
-      const data = response.data;
-      console.log("Response data:", data);
-
-      // If 2FA is required
-      if (data?.user_id || (data?.data && data.data[0]?.user_id)) {
-        const userId = data.user_id || data.data[0].user_id;
-        const role = data.role || data.data[0].role;
-
-        console.log("2FA required - returning:", {
-          twoFARequired: true,
-          userId: userId,
-          role: role
-        });
-
-        return {
-          twoFARequired: true,
-          userId: userId,
-          role: role
-        };
-      }
-
-      // Normal login success
-      if (data?.token && data?.user) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('role', data.user.role);
-
-        return {
-          token: data.token,
-          user: data.user,
-          role: data.user.role
-        };
-      }
-
-      console.log("Unexpected response format");
-      return rejectWithValue("Invalid login response format");
-
-    } catch (error) {
-      console.error("Login thunk error:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.data?.error?.[0] ||
-        error.message;
-      console.error("Error message:", errorMessage);
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-
-export const verifyTwoFA = createAsyncThunk(
-  'auth/verifyTwoFA',
-  async ({ userId, code }, { rejectWithValue }) => {
-    try {
-      const response = await AuthService.verifyTwoFA({
-        user_id: userId,
-        two_factor_code: code
-      });
-      const { token, user } = response.data;
-
+      console.log("Login response:", response);
+      // Store tokens directly in localStorage
+      const { token, user, role } = response.data;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('role', user.role);
-
-      return { token, user };
+      localStorage.setItem('role', role); // Store role for later use
+      return { token, user }; // ✅ only return required payload
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
+      const errorMessage = error.response?.data?.message ||
         error.response?.data?.data?.error?.[0] ||
         error.message;
       return rejectWithValue(errorMessage);
     }
   }
 );
+
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
@@ -239,25 +157,9 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
-
-        const { twoFARequired, user, token, role } = action.payload;
-
-        // Handle 2FA case - don't set user/token in state yet
-        if (twoFARequired) {
-          // Only store what we need for 2FA verification
-          // Don't set user/token since login isn't complete yet
-          state.user = null;
-          state.token = null;
-          state.role = role; // Optional: store role if needed for UI
-          return;
-        }
-
-        // Handle normal login success
-        if (user && token) {
-          state.user = user;
-          state.token = token;
-          state.role = user.role || role;
-        }
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.role = action.payload.user.role;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -308,22 +210,7 @@ const authSlice = createSlice({
           state.token = null;
           state.role = null;
         }
-      })
-      .addCase(verifyTwoFA.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(verifyTwoFA.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.role = action.payload.user.role;
-      })
-      .addCase(verifyTwoFA.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
       });
-
   }
 });
 

@@ -6,12 +6,13 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useDispatch, useSelector } from 'react-redux';
 import DeleteConfirmButton from './DeleteConfirmButton';
 import { deleteBrand, fetchBrands } from '../store/slices/brandSlice';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 const BrandDataTable = () => {
   const [filter ] = useState('monthly');
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { brands } = useSelector((state) => state.brands);
+  const { brands,loading,error } = useSelector((state) => state.brands);
   console.log("Brands:", brands);
 
   useEffect(() => {
@@ -162,6 +163,11 @@ const BrandDataTable = () => {
     viewColumns: false,
     filter: false,
     search: true,
+    textLabels: {
+          body: {
+            noMatch: loading ? <LoadingSpinner /> : error || 'No packages found',
+          }
+        },
     // searchOpen: true,
     customSearch: (searchQuery, currentRow) => {
       const searchValue = searchQuery.toLowerCase();

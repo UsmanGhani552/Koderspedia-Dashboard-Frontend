@@ -7,7 +7,7 @@ import { deleteClient, fetchClients } from '../store/slices/clientSlice';
 import DeleteConfirmButton from './DeleteConfirmButton';
 import profilePic from '../otherImages/profilePic.png';
 
-const CustomersList = () => {
+const CustomersList = ({ filter, selectedYear }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { clients, loading, error } = useSelector((state) => state.clients);
@@ -41,19 +41,27 @@ const CustomersList = () => {
     });
   }, [clients]);
 
-  // ONLY this month
-  const monthlyData = useMemo(() => {
-    const now = new Date();
-    const m = now.getMonth();
-    const y = now.getFullYear();
+  // Filter clients based on filter and selectedYear
+  const filteredClients = useMemo(() => {
+    if (filter === 'all') {
+      return transformedClients; // Show all clients
+    } else {
+      // Filter by selected year
+      return transformedClients.filter((client) => {
+        if (!client.created_at) return false;
+        const clientDate = new Date(client.created_at);
+        return clientDate.getFullYear() === selectedYear;
+      });
+    }
+  }, [transformedClients, filter, selectedYear]);
 
-    return transformedClients.filter((c) => {
-      if (!c.created_at) return false;
-      const d = new Date(c.created_at);
-      if (isNaN(d)) return false;
-      return d.getMonth() === m && d.getFullYear() === y;
-    });
-  }, [transformedClients]);
+  const getTableTitle = () => {
+    if (filter === 'all') {
+      return "All Time Client Overview";
+    } else {
+      return `${selectedYear} Client Overview`;
+    }
+  };
 
   const columns = [
     {
@@ -64,7 +72,7 @@ const CustomersList = () => {
         filter: true,
         searchable: true,
         customBodyRenderLite: (dataIndex) => {
-          const rowData = monthlyData[dataIndex];
+          const rowData = filteredClients[dataIndex];
           const safeVal = rowData.name?.toLowerCase().replace(/\s+/g, '_');
           return (
             <div className={`col-clientName val-${safeVal} d-flex align-items-center gap-8`}>
@@ -87,7 +95,7 @@ const CustomersList = () => {
         filter: true,
         searchable: true,
         customBodyRenderLite: (dataIndex) => {
-          const rowData = monthlyData[dataIndex];
+          const rowData = filteredClients[dataIndex];
           const safeVal = rowData.date?.toLowerCase().replace(/\s+/g, '-');
           return <span className={`col-date val-${safeVal} text-gray-600`}>{rowData.date}</span>;
         },
@@ -101,7 +109,7 @@ const CustomersList = () => {
         filter: true,
         searchable: true,
         customBodyRenderLite: (dataIndex) => {
-          const rowData = monthlyData[dataIndex];
+          const rowData = filteredClients[dataIndex];
           const safeVal = rowData.email?.toLowerCase().replace(/\s+/g, '-');
           return <span className={`col-email val-${safeVal}`}>{rowData.email}</span>;
         },
@@ -115,7 +123,7 @@ const CustomersList = () => {
         filter: true,
         searchable: true,
         customBodyRenderLite: (dataIndex) => {
-          const rowData = monthlyData[dataIndex];
+          const rowData = filteredClients[dataIndex];
           const safeVal = String(rowData.phone || 'N/A')?.toLowerCase().replace(/\s+/g, '-');
           return <span className={`col-phone val-${safeVal} font-bold`}>{rowData.phone ?? 'N/A'}</span>;
         },
@@ -129,7 +137,7 @@ const CustomersList = () => {
         filter: true,
         searchable: true,
         customBodyRenderLite: (dataIndex) => {
-          const rowData = monthlyData[dataIndex];
+          const rowData = filteredClients[dataIndex];
           const displayText = rowData.packageNames || 'None';
           const safeVal = displayText.toLowerCase().replace(/\s+/g, '-');
           return (
@@ -148,12 +156,12 @@ const CustomersList = () => {
         sort: false,
         searchable: false,
         customBodyRenderLite: (dataIndex) => {
-          const rowData = monthlyData[dataIndex];
+          const rowData = filteredClients[dataIndex];
           return (
-            <div>
+            <div className="d-flex gap-2">
               <Icon
                 onClick={() => handleEditClient(rowData)}
-                className="editBtn hover: cursor-pointer"
+                className="editBtn hover: cursor-pointer text-primary"
                 icon="line-md:edit"
                 width="24"
                 height="24"
@@ -161,7 +169,7 @@ const CustomersList = () => {
               <DeleteConfirmButton
                 item={{ id: rowData.id, name: rowData.name }}
                 deleteAction={deleteClient}
-                className="deleteBtn hover:cursor-pointer"
+                className="deleteBtn hover:cursor-pointer text-danger"
                 title="Delete Client"
               >
                 <Icon icon="material-symbols:delete-outline" width="24" height="24" />
@@ -187,11 +195,11 @@ const CustomersList = () => {
     customSearch: (searchQuery, currentRow) => {
       const q = (searchQuery || '').toLowerCase();
       return (
-        String(currentRow.name || '').toLowerCase().includes(q) ||
-        String(currentRow.email || '').toLowerCase().includes(q) ||
-        String(currentRow.phone || '').toLowerCase().includes(q) ||
-        String(currentRow.date || '').toLowerCase().includes(q) ||
-        String(currentRow.packageNames || '').toLowerCase().includes(q)
+        String(currentRow[0] || '').toLowerCase().includes(q) || // name
+        String(currentRow[1] || '').toLowerCase().includes(q) || // date
+        String(currentRow[2] || '').toLowerCase().includes(q) || // email
+        String(currentRow[3] || '').toLowerCase().includes(q) || // phone
+        String(currentRow[4] || '').toLowerCase().includes(q)    // packageNames
       );
     },
     textLabels: {
@@ -203,17 +211,22 @@ const CustomersList = () => {
 
   return (
     <>
-          <h2 className="fs-2 mt-40 mb-0">Monthly Client Overview</h2>
-
+      <h2 className="fs-2 mt-40 mb-0">{getTableTitle()}</h2>
+      <div className="mt-2 mb-3 text-muted">
+        {filter === 'all' 
+          ? 'Showing all clients from all years' 
+          : `Showing clients from ${selectedYear}`}
+      </div>
+      
       <div className="card-body">
         <MUIDataTable
-          data={monthlyData}
+          data={filteredClients}
           columns={columns}
           options={options}
           className="overflow-hidden packageTable"
         />
       </div>
-      </>
+    </>
   );
 };
 

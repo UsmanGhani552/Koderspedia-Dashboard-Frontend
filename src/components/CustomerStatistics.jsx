@@ -1,27 +1,45 @@
+import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { useSelector } from 'react-redux';
 
-const CustomerStatistics = () => {
-  // let { chartOptions, chartSeries } = useReactApexChart();
+const CustomerStatistics = ({ filter, selectedYear }) => {
   const { clients } = useSelector((state) => state.clients);
 
-  const monthlyInvoice = (currentMonth) => {
-    const currentDate = new Date();
-    return clients.filter(invoice => {
-      const invoiceDate = new Date(invoice?.created_at);
-      return invoiceDate.getMonth() === currentMonth && invoiceDate.getFullYear() === currentDate.getFullYear();
-    }); 
-  }
-  const monthArray = [];
-  for (let i = 0; i < 12; i++) {
-    if( i > new Date().getMonth()){
-      break;
+  // Filter clients based on year or all time
+  const getFilteredClients = () => {
+    if (filter === 'all') {
+      return clients; // Return all clients
+    } else {
+      // Filter by selected year
+      return clients.filter(client => {
+        if (!client?.created_at) return false;
+        const clientDate = new Date(client.created_at);
+        return clientDate.getFullYear() === selectedYear;
+      });
     }
-    monthArray.push(monthlyInvoice(i).length);
-  }
+  };
+
+  // Get monthly customer counts
+  const getMonthlyData = () => {
+    const filteredClients = getFilteredClients();
+    const monthArray = Array(12).fill(0);
+    
+    filteredClients.forEach(client => {
+      if (client?.created_at) {
+        const clientDate = new Date(client.created_at);
+        const month = clientDate.getMonth();
+        monthArray[month]++;
+      }
+    });
+    
+    return monthArray;
+  };
+
+  const monthArray = getMonthlyData();
+  
   let chartSeries = [
     {
-      name: "This month",
+      name: filter === 'all' ? "All Time" : selectedYear.toString(),
       data: monthArray,
     },
   ];
@@ -45,7 +63,6 @@ const CustomerStatistics = () => {
         opacity: 0.1,
       },
     },
-
     fill: {
       type: "gradient",
       gradient: {
@@ -61,7 +78,7 @@ const CustomerStatistics = () => {
     },
     stroke: {
       curve: "smooth",
-      colors: ["#bbb"], // Specify the line color here
+      colors: ["#bbb"],
       width: 3,
     },
     markers: {
@@ -75,26 +92,41 @@ const CustomerStatistics = () => {
       enabled: true,
       x: {
         show: true,
+        formatter: function(val, { series, seriesIndex, dataPointIndex, w }) {
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const year = filter === 'all' ? 'All Years' : selectedYear;
+          return `${monthNames[dataPointIndex]} ${year}`;
+        }
       },
       y: {
-        show: false,
-      },
-      z: {
-        show: false,
+        formatter: function(value) {
+          return `${value} customers`;
+        },
+        title: {
+          formatter: function() {
+            return 'Count: ';
+          }
+        }
       },
     },
     grid: {
       row: {
-        colors: ["transparent", "transparent"], // takes an array which will be repeated on columns
+        colors: ["transparent", "transparent"],
         opacity: 0.5,
       },
       borderColor: "#D1D5DB",
       strokeDashArray: 3,
     },
     yaxis: {
+      title: {
+        text: 'Number of Customers',
+        style: {
+          fontSize: '14px',
+        }
+      },
       labels: {
         formatter: function (value) {
-          return value;
+          return Math.round(value);
         },
         style: {
           fontSize: "14px",
@@ -103,18 +135,8 @@ const CustomerStatistics = () => {
     },
     xaxis: {
       categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
       ],
       tooltip: {
         enabled: false,
@@ -143,12 +165,15 @@ const CustomerStatistics = () => {
       },
     },
   };
+
   return (
     <div className="col-xxl-12 col-xl-12">
       <div className="card h-100">
         <div className="card-body">
           <div className="d-flex flex-wrap align-items-center justify-content-start mb-3 mt-20">
-            <h6 className="text-lg mb-0 mt-0">Customers Growth</h6>
+            <h6 className="text-lg mb-0 mt-0">
+              Customers Growth {filter === 'all' ? '(All Time)' : `(${selectedYear})`}
+            </h6>
             <ul className='salesList'>
               <li className="text-sm fw-semibold">X-axis: Months</li>
               <li className="text-sm fw-semibold">Y-axis: Number of Customers</li>

@@ -6,13 +6,14 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useSelector } from "react-redux";
 import { fetchloginActivity } from "../store/slices/loginActivitySlice";
 import { useDispatch } from "react-redux";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 const LoginDataTable = () => {
   const dispatch = useDispatch();
   const [startDate, setStartDate] = useState(new Date("2025-01-01"));
   const [endDate, setEndDate] = useState(new Date("2025-12-10"));
   const [filter] = useState("");
-  const { loginActivity } = useSelector((state) => state.loginActivity);
+  const { loginActivity, loading, error } = useSelector((state) => state.loginActivity);
 
   useEffect(() => {
     dispatch(fetchloginActivity());
@@ -161,6 +162,11 @@ const LoginDataTable = () => {
     filter: false,
     search: true,
     searchPlaceholder: "Search by any field...",
+    textLabels: {
+      body: {
+        noMatch: loading ? <LoadingSpinner /> : error || 'No packages found',
+      }
+    },
     onSearchChange: (searchText) => {
       console.log("Searching for:", searchText);
     }

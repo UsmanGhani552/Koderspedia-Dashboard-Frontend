@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { clearErrors, loginUser } from '../../src/store/slices/authSlice';
 import { Formik, Form, Field } from "formik";
 import * as Yup from 'yup';
+import { fetchClients } from "../store/slices/clientSlice";
+import { fetchInvoices } from "../store/slices/invoiceSlice";
 
 const SignInLayer = () => {
   const dispatch = useDispatch();
@@ -15,30 +17,33 @@ const SignInLayer = () => {
   useEffect(() => {
     localStorage.clear();
   }, [dispatch]);
-  // useEffect(() => {
-  //   dispatch(clearErrors());
-  // }, [dispatch]);
+
   const loginSchema = Yup.object().shape({
     email: Yup.string().email('Invalid email').required('Required'),
     password: Yup.string().required('Required'),
   });
 
   const handleSubmit = async (values) => {
-    const resultAction = await dispatch(loginUser(values));
-    if (loginUser.fulfilled.match(resultAction)) {
-      const userRole = resultAction.payload.user.role;
-      navigate('/dashboard');
-      switch (userRole.toLowerCase()) {
-        case 'admin':
-        case 'super admin':
-          navigate('/dashboard');
-          break;
-        case 'client':
-          navigate('/all-packages');
-          break;
-      }
+  const resultAction = await dispatch(loginUser(values));
+
+  if (loginUser.fulfilled.match(resultAction)) {
+    const { user } = resultAction.payload;
+    const role = user?.role?.toLowerCase();
+
+    // Handle navigation based on role
+    switch (role) {
+      case 'super admin':
+      case 'admin':
+        navigate('/dashboard');
+        break;
+      case 'client':
+        navigate('/all-packages');
+        break;
+      default:
+        navigate('/dashboard');
     }
-  };
+  }
+};
 
   return (
     <section className='auth bg-base d-flex'>

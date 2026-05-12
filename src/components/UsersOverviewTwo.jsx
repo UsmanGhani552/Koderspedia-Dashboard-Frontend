@@ -2,21 +2,42 @@ import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { useSelector } from 'react-redux';
 
-const UsersOverviewTwo = (filter) => {
-  // let { donutChartSeries, donutChartOptions } = useReactApexChart();
+const UsersOverviewTwo = ({ filter, selectedYear }) => {
   const { invoices } = useSelector((state) => state.invoices);
-  const monthlyData = (invoices) => {
-        const currentDate = new Date();
-        return invoices.filter(data => {
-            const dataDate = new Date(data.created_at);
-            return (
-                dataDate.getMonth() === currentDate.getMonth() && dataDate.getFullYear() === currentDate.getFullYear()
-            );
-        })
+
+  // Filter invoices based on filter and selectedYear
+  const getFilteredInvoices = () => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    switch (filter) {
+      case 'all':
+        return invoices;
+      case 'yearly':
+        return invoices.filter(invoice => {
+          if (!invoice?.created_at) return false;
+          const invoiceDate = new Date(invoice.created_at);
+          return invoiceDate.getFullYear() === selectedYear;
+        });
+      case 'monthly':
+        return invoices.filter(invoice => {
+          if (!invoice?.created_at) return false;
+          const invoiceDate = new Date(invoice.created_at);
+          return invoiceDate.getMonth() === currentMonth && invoiceDate.getFullYear() === currentYear;
+        }) 
+    
+      default:
+        return invoices;
     }
-  const data = filter.filter === 'monthly' ? monthlyData(invoices) : invoices;
-  const paidInvoices = data.filter(invoice => invoice.status == 1).length;
-  const unPaidInvoices = data.filter(invoice => invoice.status == 0).length;
+  }
+
+  const filteredInvoices = getFilteredInvoices();
+  
+  // Count invoice status
+  const paidInvoices = filteredInvoices.filter(invoice => invoice.status == 1).length;
+  const unPaidInvoices = filteredInvoices.filter(invoice => invoice.status == 0).length;
+  
   let donutChartSeries = [paidInvoices, unPaidInvoices];
   let total = donutChartSeries.reduce((acc, val) => acc + val, 0);
 
@@ -37,13 +58,13 @@ const UsersOverviewTwo = (filter) => {
       width: 0,
     },
     dataLabels: {
-      enabled: false, // Hides percentage from donut
+      enabled: false,
     },
     plotOptions: {
       pie: {
         donut: {
           labels: {
-            show: false, // Hides center text
+            show: false,
           }
         }
       }
@@ -52,7 +73,7 @@ const UsersOverviewTwo = (filter) => {
       y: {
         formatter: function (value, { seriesIndex }) {
           const percent = (value / total) * 100;
-          return percent.toFixed(1) + "%";
+          return `${value} (${percent.toFixed(1)}%)`;
         }
       }
     },
@@ -71,12 +92,23 @@ const UsersOverviewTwo = (filter) => {
     ],
   };
 
+  const getCardTitle = () => {
+    if (filter === 'all') {
+      return "Invoice Status (All Time)";
+    } else {
+      return `Invoice Status (${selectedYear})`;
+    }
+  };
+
   return (
     <div className="col-xxl-3 col-xl-6">
       <div className="card h-100 radius-8 border-0 overflow-hidden">
         <div className="card-body p-24">
           <div className="d-flex align-items-center flex-wrap gap-2 justify-content-between">
-            <h6 className="mb-40 fw-bold text-lg">Invoices Status</h6>
+            <h6 className="mb-40 fw-bold text-lg">{getCardTitle()}</h6>
+            {/* <div className="text-xs text-muted">
+              Total: {total} invoices
+            </div> */}
           </div>
 
           <div className="d-flex justify-content-center">
@@ -93,11 +125,10 @@ const UsersOverviewTwo = (filter) => {
             {donutChartSeries.map((value, index) => {
               const label = donutChartOptions.labels[index];
               const color = donutChartOptions.colors[index];
-              const percent = ((value / total) * 100).toFixed(1);
+              const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
 
               return (
                 <li key={index} className="d-flex align-items-center gap-2 w-100">
-
                   <span
                     className="w-12-px h-12-px radius-6"
                     style={{ backgroundColor: color }}
@@ -105,13 +136,12 @@ const UsersOverviewTwo = (filter) => {
                   <div className='d-flex justify-content-between w-100'>
                     <div className="text-secondary-light text-sm fw-normal">
                       {label}:{" "}
-
+                      <span className="fw-semibold">{value}</span>
                     </div>
                     <div className="text-primary-light text-sm fw-normal">
                       {percent}%
                     </div>
                   </div>
-
                 </li>
               );
             })}
@@ -121,6 +151,5 @@ const UsersOverviewTwo = (filter) => {
     </div>
   );
 };
-
 
 export default UsersOverviewTwo;

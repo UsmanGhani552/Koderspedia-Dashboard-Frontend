@@ -32,6 +32,7 @@ import AddUserPage from "./adminPages/AddUserPage";
 import EditUserPage from "./adminPages/EditUserPage";
 import { useSelector } from "react-redux";
 import ThankYouPage from "./adminPages/ThankYouPage";
+import Verify2FAPage from "./adminPages/Verify2FAPage";
 
 function App() {
   const { role,token } = useSelector(state => state.auth);
@@ -56,6 +57,7 @@ function App() {
         <Route path='/send-password-reset-token' element={<SendPasswordResetTokenPage />} />
         <Route path='/verify-password-reset-token' element={<VerifyPasswordResetTokenPage />} />
         <Route path='/reset-password' element={<ResetPasswordPage />} />
+        <Route path='/verify2fa' element={<Verify2FAPage />} />
 
         {/* Admin Protected Routes */}
         <Route path='/dashboard' element={<ProtectedRoute element={HomePageOne} allowedRole={["admin", "super admin"]} />} />

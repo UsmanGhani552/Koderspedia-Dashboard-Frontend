@@ -5,6 +5,10 @@ const AuthService = {
     const response = await axiosInstance.post('/login', credentials);
     return response.data;
   },
+  verifyTwoFA: async (data) => {
+    const response = await axiosInstance.post('/verify2fa', data);
+    return response.data;
+  },
   register: async (credentials) => {
     const response = await axiosInstance.post('/register', credentials);
     return response.data;

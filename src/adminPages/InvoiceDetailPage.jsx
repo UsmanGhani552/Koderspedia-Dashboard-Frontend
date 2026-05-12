@@ -148,8 +148,16 @@ const InvoicePaymentPage = () => {
                   type="number"
                   className="form-control mb-3"
                   placeholder="Enter tip amount"
+                  min="0"
                   value={tipAmount}
                   onChange={e => setTipAmount(e.target.value)}
+                  onInput={e => {
+                  // Prevent negative values on input
+                  if (e.target.value < 0) {
+                    e.target.value = Math.abs(e.target.value);
+                    setTipAmount(e.target.value);
+                  }
+                  }}
                 />
                 {invoiceData.payment_type_id == 2 ? (
                   <PayPalScriptProvider

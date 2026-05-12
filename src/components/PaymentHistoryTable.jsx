@@ -3,10 +3,12 @@ import { useSelector } from 'react-redux';
 import { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { fetchPaymentHistory } from '../store/slices/paymentHistorySlice';
+import InvoiceDownloader from '../common/InvoiceDownloader';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 const PaymentHistoryTable = () => {
   const dispatch = useDispatch();
-  const { paymentHistory} = useSelector((state) => state.paymentHistory);
+  const { paymentHistory,loading,error } = useSelector((state) => state.paymentHistory);
   useEffect(() => {
     dispatch(fetchPaymentHistory()); // Now properly calling the function
   }, [dispatch]);
@@ -111,7 +113,21 @@ const PaymentHistoryTable = () => {
           );
         }
       }
-    }
+    },
+    {
+      name: 'links',
+      label: 'Links',
+      options: {
+        customBodyRenderLite: (dataIndex) => {
+          const rowData = transformedData[dataIndex];
+          return (
+            <div>
+              <InvoiceDownloader invoiceId={rowData.id} />
+            </div>
+          );
+        },
+      },
+    },
   ];
 
   const options = {
@@ -124,6 +140,11 @@ const PaymentHistoryTable = () => {
     viewColumns: false,
     filter: false,
     search: true,
+    textLabels: {
+      body: {
+        noMatch: loading ? <LoadingSpinner /> : error || 'No packages found',
+      }
+    },
   };
 
   return (

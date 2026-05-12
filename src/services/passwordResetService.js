@@ -13,6 +13,10 @@ const passwordResetService = {
         const response = await axiosInstance.post('/reset-password',$data);
         return response.data;
     },
+    verify2FAToken: async ($data) => {
+        const response = await axiosInstance.post('/verify2fa',$data);
+        return response.data;
+    }
 }
 
 export default passwordResetService;

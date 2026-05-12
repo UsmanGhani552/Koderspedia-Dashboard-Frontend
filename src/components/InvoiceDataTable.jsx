@@ -10,13 +10,14 @@ import DeleteConfirmButton from './DeleteConfirmButton';
 import Swal from 'sweetalert2';
 import InvoiceDownloader from '../common/InvoiceDownloader';
 import { fetchBrands } from '../store/slices/brandSlice';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 const InvoiceDataTable = () => {
   const dispatch = useDispatch();
   const [filter, setFilter] = useState('monthly');
   const navigate = useNavigate();
   const [downloading, setDownloading] = useState(null);
-  const { invoices } = useSelector((state) => state.invoices);
+  const { invoices,loading,error } = useSelector((state) => state.invoices);
   useEffect(() => {
     dispatch(fetchInvoices());
   }, [dispatch]);
@@ -304,6 +305,11 @@ const InvoiceDataTable = () => {
     viewColumns: false,
     filter: false,
     search: true,
+    textLabels: {
+          body: {
+            noMatch: loading ? <LoadingSpinner /> : error || 'No packages found',
+          }
+        },
     searchPlaceholder: 'Search by any field...',
     customSearch: (searchQuery, currentRow, columns) => {
       const searchValue = searchQuery.toLowerCase();
