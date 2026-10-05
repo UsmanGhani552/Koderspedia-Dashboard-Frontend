@@ -21,8 +21,8 @@ const InvoicePaymentPage = () => {
   const [paymentStatus, setPaymentStatus] = useState(null);
   // const { user } = useSelector((state) => state.auth);
   const [tipAmount, setTipAmount] = useState();
-  // 'none' | one of TIP_PERCENTAGES | 'custom'
-  const [tipOption, setTipOption] = useState('none');
+  // null (nothing chosen yet) | 'none' | one of TIP_PERCENTAGES | 'custom'
+  const [tipOption, setTipOption] = useState(null);
   const navigate = useNavigate();
 
   const selectTipOption = (option) => {
@@ -30,10 +30,10 @@ const InvoicePaymentPage = () => {
     setTipAmount(option === 'none' ? undefined : (Number(invoiceData.price) * option / 100).toFixed(2));
   };
 
-  // Typing an amount deselects the preset buttons; clearing it goes back to "No tip"
+  // Typing an amount deselects the preset buttons; clearing it goes back to nothing selected
   const handleTipInput = (value) => {
     setTipAmount(value);
-    setTipOption(Number(value) > 0 ? 'custom' : 'none');
+    setTipOption(Number(value) > 0 ? 'custom' : null);
   };
 
   useEffect(() => {
@@ -179,7 +179,7 @@ const InvoicePaymentPage = () => {
                     </h6>
                     <p>
                       A tip is an extra amount added <strong>on top of</strong> your invoice.
-                      If you don't want to tip, just leave <strong>No tip</strong> selected.
+                      If you don't want to tip, choose <strong>No tip</strong> or simply skip this.
                     </p>
                   </div>
 
