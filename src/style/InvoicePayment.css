@@ -10,4 +10,218 @@
   .invoice-sign p{text-align: center !important;}
   .invoice-sign p img{ width: 20% !important;}
   .payment-box { padding: 32px 20px !important;}
+  .amount-due-value { font-size: 26px !important; }
+}
+
+/* Invoice amount summary */
+.amount-due {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.amount-due-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.amount-due-value {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  color: #1e1b4b;
+  line-height: 1.2;
+  margin: 2px 0 6px;
+}
+
+.amount-due-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  color: #15803d;
+}
+
+.amount-due-note i {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+/* Tip selection */
+.tip-section {
+  border: 2px solid #c7d2fe;
+  background: #eef2ff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.tip-section-header h6 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 6px;
+}
+
+.tip-optional-badge {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #fff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.tip-section-header p {
+  font-size: 13px;
+  color: #475569;
+  margin: 0 0 14px;
+}
+
+.tip-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.tip-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 8px 4px;
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e1b4b;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+}
+
+.tip-option small {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.tip-option:hover {
+  border-color: #6366f1;
+}
+
+.tip-option.active {
+  background: #1e1b4b;
+  border-color: #1e1b4b;
+  color: #fff;
+}
+
+.tip-option.active small {
+  color: #c7d2fe;
+}
+
+.payment-box .tip-custom-label {
+  font-size: 13px;
+  margin: 16px 0 6px;
+  color: #1e1b4b;
+}
+
+.tip-custom-input {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tip-custom-input:focus-within {
+  border-color: #6366f1;
+}
+
+.tip-custom-input span {
+  padding: 0 4px 0 14px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.tip-custom-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 12px 12px 12px 4px;
+  font-size: 15px;
+  background: transparent;
+}
+
+.tip-warning {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.tip-warning i {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.tip-warning button {
+  display: block;
+  margin-top: 8px;
+  padding: 4px 12px;
+  background: #fff;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+  cursor: pointer;
+}
+
+/* Total to pay */
+.pay-total {
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 14px;
+  margin-bottom: 20px;
+}
+
+.pay-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e1b4b;
+}
+
+.pay-total-row strong {
+  font-size: 22px;
+}
+
+.pay-total small {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: #64748b;
 }

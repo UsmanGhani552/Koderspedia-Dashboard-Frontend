@@ -8,6 +8,10 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { CreditCard, PaymentForm } from 'react-square-web-payments-sdk';
 import '../style/InvoicePayment.css';
 
+const TIP_PERCENTAGES = [5, 10, 15];
+
+const formatCurrency = (amount) =>
+  Number(amount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
 const InvoicePaymentPage = () => {
   const { id } = useParams();
@@ -17,7 +21,20 @@ const InvoicePaymentPage = () => {
   const [paymentStatus, setPaymentStatus] = useState(null);
   // const { user } = useSelector((state) => state.auth);
   const [tipAmount, setTipAmount] = useState();
+  // 'none' | one of TIP_PERCENTAGES | 'custom'
+  const [tipOption, setTipOption] = useState('none');
   const navigate = useNavigate();
+
+  const selectTipOption = (option) => {
+    setTipOption(option);
+    setTipAmount(option === 'none' ? undefined : (Number(invoiceData.price) * option / 100).toFixed(2));
+  };
+
+  // Typing an amount deselects the preset buttons; clearing it goes back to "No tip"
+  const handleTipInput = (value) => {
+    setTipAmount(value);
+    setTipOption(Number(value) > 0 ? 'custom' : 'none');
+  };
 
   useEffect(() => {
     const fetchInvoiceData = async () => {
@@ -118,8 +135,12 @@ const InvoicePaymentPage = () => {
   if (error) return <div className="alert alert-danger">{error}</div>;
   if (!invoiceData) return <div>No invoice data found</div>;
   const paypalClientId = process.env.REACT_APP_PAYPAL_CLIENT_ID;
+  const invoiceAmount = Number(invoiceData.price);
+  const tipValue = Number(tipAmount || 0);
+  // Clients sometimes type the invoice amount into the tip field, thinking it's the amount to pay
+  const tipLooksLikeInvoiceAmount = tipValue > 0 && tipValue >= invoiceAmount;
 
-  
+
   return (
     <div className="invoice-page-wrapper">
       <div className="invoice-page-header">
@@ -141,24 +162,97 @@ const InvoicePaymentPage = () => {
               </div>
             ) : (
               <>
-                {/* Check payment method from invoice data */}
-                {/* Tip input */}
-                <label className="form-label">Tip amount</label>
-                <input
-                  type="number"
-                  className="form-control mb-3"
-                  placeholder="Enter tip amount"
-                  min="0"
-                  value={tipAmount}
-                  onChange={e => setTipAmount(e.target.value)}
-                  onInput={e => {
-                  // Prevent negative values on input
-                  if (e.target.value < 0) {
-                    e.target.value = Math.abs(e.target.value);
-                    setTipAmount(e.target.value);
-                  }
-                  }}
-                />
+                <div className="amount-due">
+                  <span className="amount-due-label">Invoice amount</span>
+                  <span className="amount-due-value">{formatCurrency(invoiceAmount)}</span>
+                  <p className="amount-due-note">
+                    <i className="ri-checkbox-circle-fill" /> Already included in your payment. You don't need to enter it anywhere.
+                  </p>
+                </div>
+
+                {/* Tip selection */}
+                <div className="tip-section">
+                  <div className="tip-section-header">
+                    <h6>
+                      Would you like to add a tip?
+                      <span className="tip-optional-badge">Optional</span>
+                    </h6>
+                    <p>
+                      A tip is an extra amount added <strong>on top of</strong> your invoice.
+                      If you don't want to tip, just leave <strong>No tip</strong> selected.
+                    </p>
+                  </div>
+
+                  <div className="tip-options" role="radiogroup" aria-label="Tip amount">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={tipOption === 'none'}
+                      className={`tip-option ${tipOption === 'none' ? 'active' : ''}`}
+                      onClick={() => selectTipOption('none')}
+                    >
+                      No tip
+                    </button>
+                    {TIP_PERCENTAGES.map(pct => (
+                      <button
+                        key={pct}
+                        type="button"
+                        role="radio"
+                        aria-checked={tipOption === pct}
+                        className={`tip-option ${tipOption === pct ? 'active' : ''}`}
+                        onClick={() => selectTipOption(pct)}
+                      >
+                        {pct}%
+                        <small>{formatCurrency(invoiceAmount * pct / 100)}</small>
+                      </button>
+                    ))}
+                  </div>
+
+                  <label htmlFor="custom-tip" className="tip-custom-label">Or enter your own tip amount</label>
+                  <div className="tip-custom-input">
+                    <span>$</span>
+                    <input
+                      id="custom-tip"
+                      type="number"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                      value={tipAmount ?? ''}
+                      onChange={e => handleTipInput(e.target.value)}
+                      onInput={e => {
+                        // Prevent negative values on input
+                        if (e.target.value < 0) {
+                          e.target.value = Math.abs(e.target.value);
+                          handleTipInput(e.target.value);
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {tipLooksLikeInvoiceAmount && (
+                    <div className="tip-warning">
+                      <i className="ri-error-warning-fill" />
+                      <div>
+                        Your tip of <strong>{formatCurrency(tipValue)}</strong> is as much as the invoice itself.
+                        The invoice amount is already included, so you would be charged <strong>{formatCurrency(invoiceAmount + tipValue)}</strong>.
+                        <button type="button" onClick={() => selectTipOption('none')}>Remove tip</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pay-total">
+                  <div className="pay-total-row">
+                    <span>Total to pay</span>
+                    <strong>{formatCurrency(invoiceAmount + tipValue)}</strong>
+                  </div>
+                  {tipValue > 0 && (
+                    <small>
+                      {formatCurrency(invoiceAmount)} invoice + {formatCurrency(tipValue)} tip
+                    </small>
+                  )}
+                </div>
+
                 {invoiceData.payment_type_id == 2 ? (
                   <PayPalScriptProvider
                     options={{
